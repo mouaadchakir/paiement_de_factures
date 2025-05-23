@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/text_bill_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@+id/text_bill_amount"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        tools:text="Electricity Bill" />
+
+    <TextView
+        android:id="@+id/text_bill_amount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        tools:text="75.00 €" />
+
+    <TextView
+        android:id="@+id/text_bill_due_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/text_bill_name"
+        android:layout_marginTop="4dp"
+        android:textSize="14sp"
+        tools:text="25 May 2025" />
+
+    <TextView
+        android:id="@+id/text_bill_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/text_bill_name"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="4dp"
+        android:textSize="14sp"
+        tools:text="Due in 3 days" />
+
+</RelativeLayout>
