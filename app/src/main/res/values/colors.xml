@@ -10,4 +10,14 @@
     <color name="green">#4CAF50</color>
     <color name="red">#F44336</color>
     <color name="orange">#FF9800</color>
+    
+    <!-- New colors for enhanced UI -->
+    <color name="card_background">#F5F5F5</color>
+    <color name="bill_paid">#DCEDC8</color>   <!-- Light green -->
+    <color name="bill_due_soon">#FFF9C4</color>   <!-- Light yellow -->
+    <color name="bill_overdue">#FFCCBC</color>   <!-- Light red -->
+    <color name="bill_normal">#FFFFFF</color>   <!-- White -->
+    <color name="divider">#E0E0E0</color>   <!-- Very light gray -->
+    <color name="text_secondary">#757575</color>   <!-- Gray -->
+    <color name="card_shadow">#DDDDDD</color>   <!-- Light gray -->
 </resources>

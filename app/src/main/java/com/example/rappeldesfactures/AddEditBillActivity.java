@@ -1,491 +1,392 @@
 package com.example.rappeldesfactures;
 
-
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
 public class AddEditBillActivity extends AppCompatActivity {
-    private EditText nameEditText;
-    private EditText amountEditText;
-    private EditText dueDateEditText;
-    private CheckBox isPaidCheckBox;
-    private Button saveButton;
-    private Button deleteButton;
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+    private static final SimpleDateFormat DISPLAY_DATE_FORMAT = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+
+    private EditText nameEditText, amountEditText, dueDateEditText, recurrenceIntervalEditText;
+    private CheckBox isPaidCheckBox, isRecurringCheckBox;
+    private Button saveButton, deleteButton;
+    private Spinner recurrenceTypeSpinner;
+    private LinearLayout recurringOptionsLayout;
+    private TextView intervalUnitTextView;
 
     private BillDatabaseHelper dbHelper;
     private long billId = -1;
-    private Bill currentBill;
-
     private Calendar calendar;
-    private SimpleDateFormat dateFormat;
-    private SimpleDateFormat displayDateFormat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_edit_bill);
 
-        try {
-            // Initialize date formatting objects
-            calendar = Calendar.getInstance();
-            dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            displayDateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
-            
-            // Initialize UI components
-            Toolbar toolbar = findViewById(R.id.toolbar);
-            if (toolbar != null) {
-                setSupportActionBar(toolbar);
-                if (getSupportActionBar() != null) {
-                    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-                }
-            }
-    
-            // Initialize database helper
-            dbHelper = new BillDatabaseHelper(this);
-    
-            // Initialize views
-            nameEditText = findViewById(R.id.edit_bill_name);
-            amountEditText = findViewById(R.id.edit_bill_amount);
-            dueDateEditText = findViewById(R.id.edit_bill_due_date);
-            isPaidCheckBox = findViewById(R.id.checkbox_is_paid);
-            saveButton = findViewById(R.id.button_save);
-            deleteButton = findViewById(R.id.button_delete);
+        // Initialize calendar
+        calendar = Calendar.getInstance();
 
-            // Check if editing an existing bill
-            if (getIntent() != null && getIntent().hasExtra("bill_id")) {
-                billId = getIntent().getLongExtra("bill_id", -1);
-    
-                if (billId != -1) {
-                    // Editing an existing bill
-                    setTitle(R.string.edit_bill);
-                    loadBillData();
-                    if (deleteButton != null) {
-                        deleteButton.setVisibility(View.VISIBLE);
-                    }
-                } else {
-                    // Adding a new bill
-                    setTitle(R.string.add_bill);
-                    if (deleteButton != null) {
-                        deleteButton.setVisibility(View.GONE);
-                    }
-    
-                    // Set default due date to tomorrow
-                    calendar.add(Calendar.DAY_OF_MONTH, 1);
-                    updateDateDisplay();
-                }
+        // Initialize database helper
+        dbHelper = new BillDatabaseHelper(this);
+
+        // Initialize toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
+        // Initialize views
+        nameEditText = findViewById(R.id.edit_bill_name);
+        amountEditText = findViewById(R.id.edit_bill_amount);
+        dueDateEditText = findViewById(R.id.edit_bill_due_date);
+        isPaidCheckBox = findViewById(R.id.checkbox_is_paid);
+        saveButton = findViewById(R.id.button_save);
+        deleteButton = findViewById(R.id.button_delete);
+
+        // Recurring bill UI elements
+        isRecurringCheckBox = findViewById(R.id.checkbox_is_recurring);
+        recurringOptionsLayout = findViewById(R.id.recurring_options);
+        recurrenceTypeSpinner = findViewById(R.id.spinner_recurrence_type);
+        recurrenceIntervalEditText = findViewById(R.id.edit_recurrence_interval);
+        intervalUnitTextView = findViewById(R.id.text_interval_unit);
+
+        // Setup recurrence type spinner
+        setupRecurrenceTypeSpinner();
+
+        // Setup recurring checkbox listener
+        isRecurringCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            recurringOptionsLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+        });
+
+        // Set date picker for due date field
+        dueDateEditText.setOnClickListener(v -> showDatePickerDialog());
+
+        // Set up save button click listener
+        saveButton.setOnClickListener(v -> saveBill());
+
+        // Set up delete button click listener
+        deleteButton.setOnClickListener(v -> deleteBill());
+
+        // Check if editing an existing bill
+        if (getIntent() != null && getIntent().hasExtra("bill_id")) {
+            billId = getIntent().getLongExtra("bill_id", -1);
+
+            if (billId != -1) {
+                // Editing an existing bill
+                setTitle(R.string.edit_bill);
+                loadBillData();
             } else {
                 // Adding a new bill
                 setTitle(R.string.add_bill);
-                if (deleteButton != null) {
-                    deleteButton.setVisibility(View.GONE);
-                }
-    
+                deleteButton.setVisibility(View.GONE);
+
                 // Set default due date to tomorrow
                 calendar.add(Calendar.DAY_OF_MONTH, 1);
                 updateDateDisplay();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
-        }
+        } else {
+            // Adding a new bill
+            setTitle(R.string.add_bill);
+            deleteButton.setVisibility(View.GONE);
 
-        // Set up date picker dialog for due date field
-        if (dueDateEditText != null) {
-            dueDateEditText.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        showDatePickerDialog();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Toast.makeText(AddEditBillActivity.this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-        }
-
-        // Set up save button click listener
-        if (saveButton != null) {
-            saveButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        saveBill();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        if (AddEditBillActivity.this != null && !isFinishing()) {
-                            Toast.makeText(AddEditBillActivity.this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }
-            });
-        }
-
-        // Set up delete button click listener
-        if (deleteButton != null) {
-            deleteButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        deleteBill();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        if (AddEditBillActivity.this != null && !isFinishing()) {
-                            Toast.makeText(AddEditBillActivity.this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    private void loadBillData() {
-        try {
-            // Check that required objects are initialized
-            if (calendar == null) {
-                calendar = Calendar.getInstance();
-            }
-            
-            if (dateFormat == null) {
-                dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            }
-            
-            if (displayDateFormat == null) {
-                displayDateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
-            }
-            
-            // Load bill data from database
-            if (dbHelper == null) {
-                dbHelper = new BillDatabaseHelper(this);
-            }
-            
-            if (dbHelper != null && billId != -1) {
-                try {
-                    currentBill = dbHelper.getBill(billId);
-                    
-                    if (currentBill != null) {
-                        // Populate UI with bill data
-                        if (nameEditText != null) {
-                            nameEditText.setText(currentBill.getName());
-                        }
-                        
-                        if (amountEditText != null) {
-                            amountEditText.setText(String.valueOf(currentBill.getAmount()));
-                        }
-                        
-                        if (isPaidCheckBox != null) {
-                            isPaidCheckBox.setChecked(currentBill.isPaid());
-                        }
-                        
-                        // Set calendar to bill's due date
-                        try {
-                            String dueDateStr = currentBill.getDueDate();
-                            if (!TextUtils.isEmpty(dueDateStr)) {
-                                Date dueDate = dateFormat.parse(dueDateStr);
-                                if (dueDate != null) {
-                                    calendar.setTime(dueDate);
-                                    updateDateDisplay();
-                                }
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            // If due date parsing fails, set to today
-                            calendar.setTime(new Date());
-                            updateDateDisplay();
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            try {
-                Toast.makeText(this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
-            } catch (Exception ignored) {
-                // Last resort handling
-            }
+            // Set default due date to tomorrow
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+            updateDateDisplay();
         }
     }
 
     private void showDatePickerDialog() {
-        try {
-            if (calendar == null) {
-                calendar = Calendar.getInstance();
-            }
-            
-            final Calendar tempCalendar = Calendar.getInstance();
-            tempCalendar.setTimeInMillis(calendar.getTimeInMillis());
-            
-            DatePickerDialog dialog = new DatePickerDialog(
-                    this,
-                    new DatePickerDialog.OnDateSetListener() {
-                        @Override
-                        public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                            try {
-                                if (calendar != null) {
-                                    calendar.set(Calendar.YEAR, year);
-                                    calendar.set(Calendar.MONTH, month);
-                                    calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                                    updateDateDisplay();
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                Toast.makeText(AddEditBillActivity.this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    },
-                    tempCalendar.get(Calendar.YEAR),
-                    tempCalendar.get(Calendar.MONTH),
-                    tempCalendar.get(Calendar.DAY_OF_MONTH)
-            );
-
-            dialog.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
-        }
+        DatePickerDialog dialog = new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    calendar.set(Calendar.YEAR, year);
+                    calendar.set(Calendar.MONTH, month);
+                    calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                    updateDateDisplay();
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+        );
+        dialog.show();
     }
 
     private void updateDateDisplay() {
-        try {
-            if (dueDateEditText != null && calendar != null && displayDateFormat != null) {
-                dueDateEditText.setText(displayDateFormat.format(calendar.getTime()));
+        dueDateEditText.setText(DISPLAY_DATE_FORMAT.format(calendar.getTime()));
+    }
+
+    private void setupRecurrenceTypeSpinner() {
+        // Create an array adapter with recurrence options
+        ArrayAdapter<CharSequence> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
+        adapter.add(getString(R.string.days));
+        adapter.add(getString(R.string.weeks));
+        adapter.add(getString(R.string.months));
+        adapter.add(getString(R.string.years));
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        recurrenceTypeSpinner.setAdapter(adapter);
+
+        // Default to monthly recurrence
+        recurrenceTypeSpinner.setSelection(2); // RECURRENCE_MONTHLY - 1
+
+        // Set up listener to update interval unit text
+        recurrenceTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                updateIntervalUnitText(position + 1); // +1 because our constants start at 1
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            // Don't show a toast here as this might create an infinite loop in some edge cases
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Do nothing
+            }
+        });
+    }
+
+    private void updateIntervalUnitText(int recurrenceType) {
+        switch (recurrenceType) {
+            case Bill.RECURRENCE_DAILY:
+                intervalUnitTextView.setText(R.string.days);
+                break;
+            case Bill.RECURRENCE_WEEKLY:
+                intervalUnitTextView.setText(R.string.weeks);
+                break;
+            case Bill.RECURRENCE_MONTHLY:
+                intervalUnitTextView.setText(R.string.months);
+                break;
+            case Bill.RECURRENCE_YEARLY:
+                intervalUnitTextView.setText(R.string.years);
+                break;
+        }
+    }
+
+    private void loadBillData() {
+        if (billId != -1) {
+            Bill bill = dbHelper.getBillById(billId);
+            if (bill != null) {
+                nameEditText.setText(bill.getName());
+                amountEditText.setText(String.format(Locale.getDefault(), "%.2f", bill.getAmount()));
+                dueDateEditText.setText(DISPLAY_DATE_FORMAT.format(bill.getDueDateAsDate()));
+                isPaidCheckBox.setChecked(bill.isPaid());
+
+                // Set recurring bill options
+                boolean isRecurring = bill.isRecurring();
+                isRecurringCheckBox.setChecked(isRecurring);
+                recurringOptionsLayout.setVisibility(isRecurring ? View.VISIBLE : View.GONE);
+
+                if (isRecurring) {
+                    recurrenceTypeSpinner.setSelection(bill.getRecurrenceType() - 1); // -1 because RECURRENCE_NONE = 0 and we don't show it in spinner
+                    recurrenceIntervalEditText.setText(String.valueOf(bill.getRecurrenceInterval()));
+                    updateIntervalUnitText(bill.getRecurrenceType());
+                }
+
+                // Set calendar to the bill's due date for date picker
+                try {
+                    Date dueDate = DATE_FORMAT.parse(bill.getDueDate());
+                    if (dueDate != null) {
+                        calendar.setTime(dueDate);
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            // Set default due date to today
+            updateDateDisplay();
+            deleteButton.setVisibility(View.GONE);
+
+            // Default recurring settings
+            isRecurringCheckBox.setChecked(false);
+            recurringOptionsLayout.setVisibility(View.GONE);
+            recurrenceTypeSpinner.setSelection(Bill.RECURRENCE_MONTHLY - 1); // Default to monthly
+            recurrenceIntervalEditText.setText("1");
         }
     }
 
     private void saveBill() {
-        try {
-            // Check if required objects are initialized
-            if (dateFormat == null || calendar == null) {
-                calendar = Calendar.getInstance();
-                dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            }
-            
-            // Validate inputs
-            if (nameEditText == null || amountEditText == null || dueDateEditText == null || isPaidCheckBox == null) {
-                Toast.makeText(this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
-                return;
-            }
-            
-            // Check if database helper is initialized
-            if (dbHelper == null) {
-                dbHelper = new BillDatabaseHelper(this);
-                if (dbHelper == null) {
-                    Toast.makeText(this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
-                    return;
-                }
-            }
+        String name = nameEditText.getText().toString().trim();
+        String amountStr = amountEditText.getText().toString().trim();
+        String dueDate = DATE_FORMAT.format(calendar.getTime());
+        boolean isPaid = isPaidCheckBox.isChecked();
+        boolean isRecurring = isRecurringCheckBox.isChecked();
 
-            // Get and validate the bill name
-            String name = "";
-            if (nameEditText.getText() != null) {
-                name = nameEditText.getText().toString().trim();
-            }
-            if (TextUtils.isEmpty(name)) {
-                nameEditText.setError(getString(R.string.error_field_required));
-                nameEditText.requestFocus();
-                return;
-            }
+        // Get recurrence settings if bill is recurring
+        int recurrenceType = Bill.RECURRENCE_NONE;
+        int recurrenceInterval = 1;
 
-            // Get and validate the amount
-            String amountStr = "";
-            if (amountEditText.getText() != null) {
-                amountStr = amountEditText.getText().toString().trim();
-            }
-            if (TextUtils.isEmpty(amountStr)) {
-                amountEditText.setError(getString(R.string.error_field_required));
-                amountEditText.requestFocus();
-                return;
-            }
+        if (isRecurring) {
+            recurrenceType = recurrenceTypeSpinner.getSelectedItemPosition() + 1; // +1 because spinner starts at 0 but our constants start at 1
 
-            double amount;
             try {
-                amount = Double.parseDouble(amountStr);
-                if (amount <= 0) {
-                    amountEditText.setError(getString(R.string.error_invalid_amount));
-                    amountEditText.requestFocus();
-                    return;
-                }
+                recurrenceInterval = Integer.parseInt(recurrenceIntervalEditText.getText().toString());
+                if (recurrenceInterval < 1) recurrenceInterval = 1;
             } catch (NumberFormatException e) {
+                recurrenceInterval = 1;
+            }
+        }
+
+        // Validate inputs
+        if (name.isEmpty()) {
+            nameEditText.setError(getString(R.string.error_field_required));
+            nameEditText.requestFocus();
+            return;
+        }
+
+        if (amountStr.isEmpty()) {
+            amountEditText.setError(getString(R.string.error_field_required));
+            amountEditText.requestFocus();
+            return;
+        }
+
+        double amount;
+        try {
+            amount = Double.parseDouble(amountStr);
+            if (amount <= 0) {
                 amountEditText.setError(getString(R.string.error_invalid_amount));
                 amountEditText.requestFocus();
                 return;
             }
+        } catch (NumberFormatException e) {
+            amountEditText.setError(getString(R.string.error_invalid_amount));
+            amountEditText.requestFocus();
+            return;
+        }
 
-            // Get due date display value (just for validation)
-            String dueDateDisplay = "";
-            if (dueDateEditText.getText() != null) {
-                dueDateDisplay = dueDateEditText.getText().toString().trim();
+        Bill bill;
+        if (billId != -1) {
+            bill = dbHelper.getBillById(billId);
+            if (bill == null) {
+                bill = new Bill();
+                bill.setId(billId);
             }
-            if (TextUtils.isEmpty(dueDateDisplay)) {
-                dueDateEditText.setError(getString(R.string.error_field_required));
-                dueDateEditText.requestFocus();
-                return;
-            }
+        } else {
+            bill = new Bill();
+        }
 
-            // Format due date for storage - using calendar which was set by the date picker
-            String dueDate = dateFormat.format(calendar.getTime());
-            boolean isPaid = isPaidCheckBox.isChecked();
+        bill.setName(name);
+        bill.setAmount(amount);
+        bill.setDueDate(dueDate);
+        bill.setPaid(isPaid);
+        bill.setRecurrenceType(isRecurring ? recurrenceType : Bill.RECURRENCE_NONE);
+        bill.setRecurrenceInterval(recurrenceInterval);
 
-            // Check if we're adding a new bill or updating an existing one
-            long result = -1;
-            if (billId == -1) {
-                try {
-                    // Add new bill
-                    Bill newBill = new Bill(0, name, amount, dueDate, isPaid);
-                    result = dbHelper.addBill(newBill);
-    
-                    // If bill was added successfully and is not marked as paid, schedule notification
-                    if (result > 0 && !isPaid) {
-                        try {
-                            NotificationHelper.scheduleBillReminder(this, (int) result, name, amount, dueDate);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            // Continue even if notification scheduling fails
-                        }
-                    }
-    
-                    if (result > 0) {
-                        Toast.makeText(this, R.string.bill_added, Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        Toast.makeText(this, R.string.error_adding_bill, Toast.LENGTH_SHORT).show();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(this, R.string.error_adding_bill, Toast.LENGTH_SHORT).show();
+        long result;
+        if (billId != -1) {
+            result = dbHelper.updateBill(bill);
+            if (result > 0) {
+                Toast.makeText(this, R.string.bill_updated, Toast.LENGTH_SHORT).show();
+                // Update notification for this bill if it was updated
+                if (!isPaid) {
+                    scheduleNotification(bill);
+                } else if (isRecurring) {
+                    // If a recurring bill is marked as paid, create the next occurrence
+                    createNextRecurrence(bill);
                 }
             } else {
-                try {
-                    // Default wasPaid to opposite of current isPaid
-                    boolean wasPaid = false;
-    
-                    // Update existing bill
-                    if (currentBill == null) {
-                        // If currentBill is null, create a new one
-                        currentBill = new Bill(billId, name, amount, dueDate, isPaid);
-                        if (dbHelper != null) {
-                            result = dbHelper.addBill(currentBill);
-                        } else {
-                            Toast.makeText(this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                    } else {
-                        // Update existing bill
-                        currentBill.setName(name);
-                        currentBill.setAmount(amount);
-                        currentBill.setDueDate(dueDate);
-    
-                        // Check if payment status changed
-                        wasPaid = currentBill.isPaid();
-                        currentBill.setPaid(isPaid);
-    
-                        if (dbHelper != null) {
-                            result = dbHelper.updateBill(currentBill);
-                        } else {
-                            Toast.makeText(this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                    }
-    
-                    if (result > 0) {
-                        try {
-                            // If bill was unpaid and now is paid, cancel notification
-                            if (!wasPaid && isPaid) {
-                                NotificationHelper.cancelBillReminder(this, (int) billId);
-                            }
-                            // If bill was paid and now is unpaid, schedule notification
-                            else if (wasPaid && !isPaid) {
-                                NotificationHelper.scheduleBillReminder(this, (int) billId, name, amount, dueDate);
-                            }
-                            // If bill remains unpaid but details changed, update notification
-                            else if (!isPaid) {
-                                NotificationHelper.updateBillReminder(this, (int) billId, name, amount, dueDate);
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            // Continue even if notification handling fails
-                        }
-    
-                        Toast.makeText(this, R.string.bill_updated, Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        Toast.makeText(this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
+        } else {
+            result = dbHelper.addBill(bill);
+            if (result > 0) {
+                bill.setId(result); // Set the ID of the new bill
+                Toast.makeText(this, R.string.bill_added, Toast.LENGTH_SHORT).show();
+                // Schedule notification for new bill
+                if (!isPaid) {
+                    scheduleNotification(bill);
+                }
+            } else {
+                Toast.makeText(this, R.string.error_adding_bill, Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        if (result > 0) {
+            setResult(RESULT_OK);
+            finish();
         }
     }
 
     private void deleteBill() {
-        try {
-            if (billId != -1) {
-                // Check if database helper is initialized
-                if (dbHelper == null) {
-                    dbHelper = new BillDatabaseHelper(this);
-                }
-                
-                // Delete from database
-                if (dbHelper != null) {
-                    try {
-                        dbHelper.deleteBill(billId);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Toast.makeText(this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                } else {
-                    Toast.makeText(this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                // Cancel any scheduled notifications for this bill
-                try {
-                    NotificationHelper.cancelBillReminder(this, (int) billId);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    // Continue even if notification cancellation fails
-                }
-
-                Toast.makeText(this, R.string.bill_deleted, Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            try {
-                Toast.makeText(this, R.string.error_updating_bill, Toast.LENGTH_SHORT).show();
-            } catch (Exception ignored) {
-                // Last resort handling
-            }
+        if (billId == -1) {
+            return; // Nothing to delete
         }
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.delete_bill_title)
+                .setMessage(R.string.delete_bill_message)
+                .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                    if (dbHelper != null) {
+                        int result = dbHelper.deleteBill(billId);
+                        if (result > 0) {
+                            // Cancel any notifications for this bill
+                            cancelNotification(billId);
+                            Toast.makeText(AddEditBillActivity.this, R.string.bill_deleted, Toast.LENGTH_SHORT).show();
+                            setResult(RESULT_OK);
+                            finish();
+                        } else {
+                            Toast.makeText(AddEditBillActivity.this, "Erreur lors de la suppression", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .setNegativeButton(android.R.string.no, null)
+                .show();
+    }
+
+    private void createNextRecurrence(Bill bill) {
+        // If bill is not recurring, don't create next recurrence
+        if (!bill.isRecurring()) {
+            return;
+        }
+
+        // Create a new bill for the next due date
+        Bill nextBill = new Bill();
+        nextBill.setName(bill.getName());
+        nextBill.setAmount(bill.getAmount());
+        nextBill.setDueDate(bill.getNextDueDate());
+        nextBill.setPaid(false);
+        nextBill.setRecurrenceType(bill.getRecurrenceType());
+        nextBill.setRecurrenceInterval(bill.getRecurrenceInterval());
+
+        // Save the next occurrence
+        long nextBillId = dbHelper.addBill(nextBill);
+        if (nextBillId > 0) {
+            nextBill.setId(nextBillId);
+            scheduleNotification(nextBill);
+        }
+    }
+
+    private void scheduleNotification(Bill bill) {
+        NotificationHelper.scheduleBillReminder(this, (int) bill.getId(),
+                bill.getName(), bill.getAmount(), bill.getDueDate());
+    }
+
+    private void cancelNotification(long billId) {
+        NotificationHelper.cancelBillReminder(this, (int) billId);
     }
 
     @Override

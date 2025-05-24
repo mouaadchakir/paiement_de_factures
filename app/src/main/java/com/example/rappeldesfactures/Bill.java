@@ -4,17 +4,26 @@ package com.example.rappeldesfactures;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
 public class Bill implements Serializable {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
     
+    public static final int RECURRENCE_NONE = 0;
+    public static final int RECURRENCE_DAILY = 1;
+    public static final int RECURRENCE_WEEKLY = 2;
+    public static final int RECURRENCE_MONTHLY = 3;
+    public static final int RECURRENCE_YEARLY = 4;
+    
     private long id;
     private String name;
     private double amount;
     private String dueDate;
     private boolean isPaid;
+    private int recurrenceType;
+    private int recurrenceInterval;
 
     // Default constructor
     public Bill() {
@@ -35,6 +44,20 @@ public class Bill implements Serializable {
         this.amount = amount;
         this.dueDate = dueDate;
         this.isPaid = isPaid;
+        this.recurrenceType = RECURRENCE_NONE;
+        this.recurrenceInterval = 1;
+    }
+    
+    // Constructor with all fields including recurrence
+    public Bill(long id, String name, double amount, String dueDate, boolean isPaid, 
+                int recurrenceType, int recurrenceInterval) {
+        this.id = id;
+        this.name = name;
+        this.amount = amount;
+        this.dueDate = dueDate;
+        this.isPaid = isPaid;
+        this.recurrenceType = recurrenceType;
+        this.recurrenceInterval = recurrenceInterval;
     }
 
     // Getters and Setters
@@ -76,6 +99,60 @@ public class Bill implements Serializable {
 
     public void setPaid(boolean paid) {
         isPaid = paid;
+    }
+    
+    public int getRecurrenceType() {
+        return recurrenceType;
+    }
+    
+    public void setRecurrenceType(int recurrenceType) {
+        this.recurrenceType = recurrenceType;
+    }
+    
+    public int getRecurrenceInterval() {
+        return recurrenceInterval;
+    }
+    
+    public void setRecurrenceInterval(int recurrenceInterval) {
+        this.recurrenceInterval = recurrenceInterval;
+    }
+    
+    public boolean isRecurring() {
+        return recurrenceType != RECURRENCE_NONE;
+    }
+    
+    public String getNextDueDate() {
+        if (recurrenceType == RECURRENCE_NONE) {
+            return dueDate;
+        }
+        
+        try {
+            Date date = DATE_FORMAT.parse(dueDate);
+            if (date == null) return dueDate;
+            
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(date);
+            
+            switch (recurrenceType) {
+                case RECURRENCE_DAILY:
+                    cal.add(Calendar.DAY_OF_MONTH, recurrenceInterval);
+                    break;
+                case RECURRENCE_WEEKLY:
+                    cal.add(Calendar.WEEK_OF_YEAR, recurrenceInterval);
+                    break;
+                case RECURRENCE_MONTHLY:
+                    cal.add(Calendar.MONTH, recurrenceInterval);
+                    break;
+                case RECURRENCE_YEARLY:
+                    cal.add(Calendar.YEAR, recurrenceInterval);
+                    break;
+            }
+            
+            return DATE_FORMAT.format(cal.getTime());
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return dueDate;
+        }
     }
 
     // Utility methods

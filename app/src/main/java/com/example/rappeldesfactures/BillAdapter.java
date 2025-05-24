@@ -4,11 +4,15 @@ package com.example.rappeldesfactures;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.cardview.widget.CardView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -43,6 +47,8 @@ public class BillAdapter extends ArrayAdapter<Bill> {
             viewHolder.amountTextView = convertView.findViewById(R.id.text_bill_amount);
             viewHolder.dueDateTextView = convertView.findViewById(R.id.text_bill_due_date);
             viewHolder.statusTextView = convertView.findViewById(R.id.text_bill_status);
+            viewHolder.cardBackground = convertView.findViewById(R.id.bill_background);
+            viewHolder.billCard = convertView.findViewById(R.id.bill_card);
             
             convertView.setTag(viewHolder);
         } else {
@@ -54,7 +60,7 @@ public class BillAdapter extends ArrayAdapter<Bill> {
 
         // Set the bill data
         viewHolder.nameTextView.setText(bill.getName() != null ? bill.getName() : "");
-        viewHolder.amountTextView.setText(String.format(Locale.getDefault(), "%.2f €", bill.getAmount()));
+        viewHolder.amountTextView.setText(String.format(Locale.getDefault(), "%.2f DH", bill.getAmount()));
 
         // Format and set the due date
         try {
@@ -63,28 +69,51 @@ public class BillAdapter extends ArrayAdapter<Bill> {
                 viewHolder.dueDateTextView.setText("");
             } else {
                 Date dueDate = DATE_FORMAT.parse(dueDateStr);
-                viewHolder.dueDateTextView.setText(DISPLAY_DATE_FORMAT.format(dueDate));
+                if (dueDate != null) {
+                    viewHolder.dueDateTextView.setText(DISPLAY_DATE_FORMAT.format(dueDate));
+                }
             }
             
-            // Set days remaining text and color
+            // Set bill status and styling
             long daysUntilDue = getDaysUntilDue(bill.getDueDate());
+            int statusBgColor;
+            int statusTextColor = context.getResources().getColor(R.color.black);
+            int cardBgColor = context.getResources().getColor(R.color.white);
+            String statusText;
+            
             if (bill.isPaid()) {
-                viewHolder.statusTextView.setText(R.string.paid);
-                viewHolder.statusTextView.setTextColor(Color.GREEN);
+                // Paid bill
+                statusText = context.getString(R.string.status_paid);
+                statusBgColor = context.getResources().getColor(R.color.bill_paid);
+                cardBgColor = context.getResources().getColor(R.color.bill_paid);
             } else if (daysUntilDue < 0) {
-                viewHolder.statusTextView.setText(R.string.overdue);
-                viewHolder.statusTextView.setTextColor(Color.RED);
+                // Overdue bill
+                statusText = context.getString(R.string.status_overdue);
+                statusBgColor = context.getResources().getColor(R.color.bill_overdue);
+                statusTextColor = context.getResources().getColor(R.color.red);
             } else if (daysUntilDue == 0) {
-                viewHolder.statusTextView.setText(R.string.due_today);
-                
-                viewHolder.statusTextView.setTextColor(Color.parseColor("#FF9800")); // Orange
+                // Due today
+                statusText = context.getString(R.string.status_due_today);
+                statusBgColor = context.getResources().getColor(R.color.bill_due_soon);
+                statusTextColor = context.getResources().getColor(R.color.orange);
             } else if (daysUntilDue <= 3) {
-                viewHolder.statusTextView.setText(context.getString(R.string.days_remaining, daysUntilDue));
-                viewHolder.statusTextView.setTextColor(Color.parseColor("#FF9800")); // Orange
+                // Due soon
+                statusText = context.getString(R.string.status_due_soon);
+                statusBgColor = context.getResources().getColor(R.color.bill_due_soon);
+                statusTextColor = context.getResources().getColor(R.color.orange);
             } else {
-                viewHolder.statusTextView.setText(context.getString(R.string.days_remaining, daysUntilDue));
-                viewHolder.statusTextView.setTextColor(Color.parseColor("#2196F3")); // Blue
+                // Upcoming
+                statusText = context.getString(R.string.days_remaining, daysUntilDue);
+                statusBgColor = context.getResources().getColor(R.color.bill_normal);
+                statusTextColor = context.getResources().getColor(R.color.primary);
             }
+            
+            // Apply the styles
+            viewHolder.statusTextView.setText(statusText);
+            viewHolder.statusTextView.setTextColor(statusTextColor);
+            viewHolder.statusTextView.getBackground().setColorFilter(
+                    statusBgColor, PorterDuff.Mode.SRC_ATOP);
+            viewHolder.cardBackground.setBackgroundColor(cardBgColor);
         } catch (ParseException e) {
             e.printStackTrace();
             viewHolder.dueDateTextView.setText(bill.getDueDate());
@@ -111,5 +140,7 @@ public class BillAdapter extends ArrayAdapter<Bill> {
         TextView amountTextView;
         TextView dueDateTextView;
         TextView statusTextView;
+        LinearLayout cardBackground;
+        CardView billCard;
     }
 }

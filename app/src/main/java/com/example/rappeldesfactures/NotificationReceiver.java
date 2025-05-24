@@ -51,7 +51,7 @@ public class NotificationReceiver extends BroadcastReceiver {
         String notificationContent = context.getString(
                 R.string.notification_content,
                 billName,
-                String.format(Locale.getDefault(), "%.2f €", billAmount),
+                String.format(Locale.getDefault(), "%.2f DH", billAmount),
                 formattedDueDate
         );
         

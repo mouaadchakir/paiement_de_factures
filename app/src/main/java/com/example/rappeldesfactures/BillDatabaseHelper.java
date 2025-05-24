@@ -8,23 +8,28 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 public class BillDatabaseHelper extends SQLiteOpenHelper {
     // Database Info
-    private static final String DATABASE_NAME = "billReminder.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final String DATABASE_NAME = "bills.db";
+    private static final int DATABASE_VERSION = 2;
 
     // Table Names
-    private static final String TABLE_BILLS = "bills";
+    public static final String TABLE_BILLS = "bills";
 
     // Bill Table Columns
-    private static final String KEY_BILL_ID = "id";
-    private static final String KEY_BILL_NAME = "name";
-    private static final String KEY_BILL_AMOUNT = "amount";
-    private static final String KEY_BILL_DUE_DATE = "due_date";
-    private static final String KEY_BILL_IS_PAID = "is_paid";
+    public static final String COLUMN_ID = "_id";
+    public static final String COLUMN_NAME = "name";
+    public static final String COLUMN_AMOUNT = "amount";
+    public static final String COLUMN_DUE_DATE = "due_date";
+    public static final String COLUMN_IS_PAID = "is_paid";
+    public static final String COLUMN_RECURRENCE_TYPE = "recurrence_type";
+    public static final String COLUMN_RECURRENCE_INTERVAL = "recurrence_interval";
 
     public BillDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -34,11 +39,13 @@ public class BillDatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         String CREATE_BILLS_TABLE = "CREATE TABLE " + TABLE_BILLS +
                 "(" +
-                KEY_BILL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                KEY_BILL_NAME + " TEXT NOT NULL," +
-                KEY_BILL_AMOUNT + " REAL NOT NULL," +
-                KEY_BILL_DUE_DATE + " TEXT NOT NULL," +
-                KEY_BILL_IS_PAID + " INTEGER DEFAULT 0" +
+                COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                COLUMN_NAME + " TEXT NOT NULL," +
+                COLUMN_AMOUNT + " REAL NOT NULL," +
+                COLUMN_DUE_DATE + " TEXT NOT NULL," +
+                COLUMN_IS_PAID + " INTEGER NOT NULL," +
+                COLUMN_RECURRENCE_TYPE + " INTEGER NOT NULL DEFAULT 0," +
+                COLUMN_RECURRENCE_INTERVAL + " INTEGER NOT NULL DEFAULT 1" +
                 ")";
 
         db.execSQL(CREATE_BILLS_TABLE);
@@ -46,35 +53,29 @@ public class BillDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion != newVersion) {
-            // Simplest implementation is to drop all old tables and recreate them
-            db.execSQL("DROP TABLE IF EXISTS " + TABLE_BILLS);
-            onCreate(db);
+        if (oldVersion < 2) {
+            // Add new columns for recurring bills
+            db.execSQL("ALTER TABLE " + TABLE_BILLS + " ADD COLUMN " + 
+                      COLUMN_RECURRENCE_TYPE + " INTEGER NOT NULL DEFAULT 0");
+            db.execSQL("ALTER TABLE " + TABLE_BILLS + " ADD COLUMN " + 
+                      COLUMN_RECURRENCE_INTERVAL + " INTEGER NOT NULL DEFAULT 1");
         }
     }
 
     // Insert a bill into the database
     public long addBill(Bill bill) {
-        SQLiteDatabase db = getWritableDatabase();
-        long billId = -1;
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NAME, bill.getName());
+        values.put(COLUMN_AMOUNT, bill.getAmount());
+        values.put(COLUMN_DUE_DATE, bill.getDueDate());
+        values.put(COLUMN_IS_PAID, bill.isPaid() ? 1 : 0);
+        values.put(COLUMN_RECURRENCE_TYPE, bill.getRecurrenceType());
+        values.put(COLUMN_RECURRENCE_INTERVAL, bill.getRecurrenceInterval());
 
-        db.beginTransaction();
-        try {
-            ContentValues values = new ContentValues();
-            values.put(KEY_BILL_NAME, bill.getName());
-            values.put(KEY_BILL_AMOUNT, bill.getAmount());
-            values.put(KEY_BILL_DUE_DATE, bill.getDueDate());
-            values.put(KEY_BILL_IS_PAID, bill.isPaid() ? 1 : 0);
-
-            billId = db.insertOrThrow(TABLE_BILLS, null, values);
-            db.setTransactionSuccessful();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            db.endTransaction();
-        }
-
-        return billId;
+        SQLiteDatabase db = this.getWritableDatabase();
+        long insertId = db.insert(TABLE_BILLS, null, values);
+        db.close();
+        return insertId;
     }
 
     // Get all bills from the database
@@ -82,7 +83,7 @@ public class BillDatabaseHelper extends SQLiteOpenHelper {
         List<Bill> bills = new ArrayList<>();
 
         String BILLS_SELECT_QUERY = "SELECT * FROM " + TABLE_BILLS + 
-                                   " ORDER BY " + KEY_BILL_DUE_DATE + " ASC";
+                                   " ORDER BY " + COLUMN_DUE_DATE + " ASC";
 
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(BILLS_SELECT_QUERY, null);
@@ -91,18 +92,22 @@ public class BillDatabaseHelper extends SQLiteOpenHelper {
                 do {
                     try {
                         Bill bill = new Bill();
-                        int idIdx = cursor.getColumnIndexOrThrow(KEY_BILL_ID);
-                        int nameIdx = cursor.getColumnIndexOrThrow(KEY_BILL_NAME);
-                        int amountIdx = cursor.getColumnIndexOrThrow(KEY_BILL_AMOUNT);
-                        int dueDateIdx = cursor.getColumnIndexOrThrow(KEY_BILL_DUE_DATE);
-                        int isPaidIdx = cursor.getColumnIndexOrThrow(KEY_BILL_IS_PAID);
-                        
+                        int idIdx = cursor.getColumnIndexOrThrow(COLUMN_ID);
+                        int nameIdx = cursor.getColumnIndexOrThrow(COLUMN_NAME);
+                        int amountIdx = cursor.getColumnIndexOrThrow(COLUMN_AMOUNT);
+                        int dueDateIdx = cursor.getColumnIndexOrThrow(COLUMN_DUE_DATE);
+                        int isPaidIdx = cursor.getColumnIndexOrThrow(COLUMN_IS_PAID);
+                        int recurrenceTypeIdx = cursor.getColumnIndexOrThrow(COLUMN_RECURRENCE_TYPE);
+                        int recurrenceIntervalIdx = cursor.getColumnIndexOrThrow(COLUMN_RECURRENCE_INTERVAL);
+
                         bill.setId(cursor.getLong(idIdx));
                         bill.setName(cursor.getString(nameIdx));
                         bill.setAmount(cursor.getDouble(amountIdx));
                         bill.setDueDate(cursor.getString(dueDateIdx));
                         bill.setPaid(cursor.getInt(isPaidIdx) == 1);
-    
+                        bill.setRecurrenceType(cursor.getInt(recurrenceTypeIdx));
+                        bill.setRecurrenceInterval(cursor.getInt(recurrenceIntervalIdx));
+
                         bills.add(bill);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -120,47 +125,121 @@ public class BillDatabaseHelper extends SQLiteOpenHelper {
         return bills;
     }
 
-    // Get unpaid bills due within a certain number of days
-    public List<Bill> getUpcomingBills(int daysThreshold) {
-        List<Bill> bills = new ArrayList<>();
-        List<Bill> allBills = getAllBills();
-        
-        for (Bill bill : allBills) {
-            if (!bill.isPaid() && bill.isDueSoon(daysThreshold)) {
-                bills.add(bill);
+    // Get a single bill by ID
+    public Bill getBillById(long id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_BILLS, null, COLUMN_ID + " = ?",
+                new String[]{String.valueOf(id)}, null, null, null, null);
+
+        Bill bill = null;
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                bill = new Bill();
+                bill.setId(cursor.getLong(cursor.getColumnIndex(COLUMN_ID)));
+                bill.setName(cursor.getString(cursor.getColumnIndex(COLUMN_NAME)));
+                bill.setAmount(cursor.getDouble(cursor.getColumnIndex(COLUMN_AMOUNT)));
+                bill.setDueDate(cursor.getString(cursor.getColumnIndex(COLUMN_DUE_DATE)));
+                bill.setPaid(cursor.getInt(cursor.getColumnIndex(COLUMN_IS_PAID)) == 1);
+                
+                // Get recurrence info if available
+                int recurrenceTypeIndex = cursor.getColumnIndex(COLUMN_RECURRENCE_TYPE);
+                if (recurrenceTypeIndex != -1) {
+                    bill.setRecurrenceType(cursor.getInt(recurrenceTypeIndex));
+                }
+                
+                int recurrenceIntervalIndex = cursor.getColumnIndex(COLUMN_RECURRENCE_INTERVAL);
+                if (recurrenceIntervalIndex != -1) {
+                    bill.setRecurrenceInterval(cursor.getInt(recurrenceIntervalIndex));
+                }
             }
+            cursor.close();
         }
-        
-        return bills;
+        db.close();
+        return bill;
     }
 
-    // Get a single bill by ID
-    public Bill getBill(long id) {
-        SQLiteDatabase db = getReadableDatabase();
-        Bill bill = null;
+    // Update an existing bill
+    public int updateBill(Bill bill) {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NAME, bill.getName());
+        values.put(COLUMN_AMOUNT, bill.getAmount());
+        values.put(COLUMN_DUE_DATE, bill.getDueDate());
+        values.put(COLUMN_IS_PAID, bill.isPaid() ? 1 : 0);
+        values.put(COLUMN_RECURRENCE_TYPE, bill.getRecurrenceType());
+        values.put(COLUMN_RECURRENCE_INTERVAL, bill.getRecurrenceInterval());
 
-        String BILL_SELECT_QUERY = "SELECT * FROM " + TABLE_BILLS + 
-                                  " WHERE " + KEY_BILL_ID + " = ?";
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rowsUpdated = db.update(TABLE_BILLS, values, COLUMN_ID + " = ?",
+                new String[]{String.valueOf(bill.getId())});
+        db.close();
+        return rowsUpdated;
+    }
+
+    // Delete a bill
+    public int deleteBill(long id) {
+        SQLiteDatabase db = getWritableDatabase();
+        int rowsDeleted = 0;
+        db.beginTransaction();
+        try {
+            rowsDeleted = db.delete(TABLE_BILLS, COLUMN_ID + " = ?", new String[]{String.valueOf(id)});
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            db.endTransaction();
+        }
+        db.close();
+        return rowsDeleted;
+    }
+    
+    // Get upcoming bills due within the next 'days' days
+    public List<Bill> getUpcomingBills(int days) {
+        List<Bill> upcomingBills = new ArrayList<>();
         
-        Cursor cursor = db.rawQuery(BILL_SELECT_QUERY, new String[]{String.valueOf(id)});
+        // Get current date
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Calendar calendar = Calendar.getInstance();
+        String today = dateFormat.format(calendar.getTime());
+        
+        // Calculate future date (today + days)
+        calendar.add(Calendar.DAY_OF_MONTH, days);
+        String futureDate = dateFormat.format(calendar.getTime());
+        
+        // Query for upcoming bills
+        String UPCOMING_BILLS_QUERY = "SELECT * FROM " + TABLE_BILLS + 
+                                  " WHERE " + COLUMN_IS_PAID + " = 0 AND " +
+                                  COLUMN_DUE_DATE + " BETWEEN ? AND ? " +
+                                  "ORDER BY " + COLUMN_DUE_DATE + " ASC";
+        
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(UPCOMING_BILLS_QUERY, new String[]{today, futureDate});
+        
         try {
             if (cursor.moveToFirst()) {
-                try {
-                    bill = new Bill();
-                    int idIdx = cursor.getColumnIndexOrThrow(KEY_BILL_ID);
-                    int nameIdx = cursor.getColumnIndexOrThrow(KEY_BILL_NAME);
-                    int amountIdx = cursor.getColumnIndexOrThrow(KEY_BILL_AMOUNT);
-                    int dueDateIdx = cursor.getColumnIndexOrThrow(KEY_BILL_DUE_DATE);
-                    int isPaidIdx = cursor.getColumnIndexOrThrow(KEY_BILL_IS_PAID);
-                    
-                    bill.setId(cursor.getLong(idIdx));
-                    bill.setName(cursor.getString(nameIdx));
-                    bill.setAmount(cursor.getDouble(amountIdx));
-                    bill.setDueDate(cursor.getString(dueDateIdx));
-                    bill.setPaid(cursor.getInt(isPaidIdx) == 1);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                do {
+                    try {
+                        Bill bill = new Bill();
+                        int idIdx = cursor.getColumnIndexOrThrow(COLUMN_ID);
+                        int nameIdx = cursor.getColumnIndexOrThrow(COLUMN_NAME);
+                        int amountIdx = cursor.getColumnIndexOrThrow(COLUMN_AMOUNT);
+                        int dueDateIdx = cursor.getColumnIndexOrThrow(COLUMN_DUE_DATE);
+                        int isPaidIdx = cursor.getColumnIndexOrThrow(COLUMN_IS_PAID);
+                        int recurrenceTypeIdx = cursor.getColumnIndexOrThrow(COLUMN_RECURRENCE_TYPE);
+                        int recurrenceIntervalIdx = cursor.getColumnIndexOrThrow(COLUMN_RECURRENCE_INTERVAL);
+
+                        bill.setId(cursor.getLong(idIdx));
+                        bill.setName(cursor.getString(nameIdx));
+                        bill.setAmount(cursor.getDouble(amountIdx));
+                        bill.setDueDate(cursor.getString(dueDateIdx));
+                        bill.setPaid(cursor.getInt(isPaidIdx) == 1);
+                        bill.setRecurrenceType(cursor.getInt(recurrenceTypeIdx));
+                        bill.setRecurrenceInterval(cursor.getInt(recurrenceIntervalIdx));
+
+                        upcomingBills.add(bill);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } while (cursor.moveToNext());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -169,46 +248,8 @@ public class BillDatabaseHelper extends SQLiteOpenHelper {
                 cursor.close();
             }
         }
-
-        return bill;
-    }
-
-    // Update an existing bill
-    public int updateBill(Bill bill) {
-        SQLiteDatabase db = getWritableDatabase();
-        int rowsAffected = 0;
-
-        db.beginTransaction();
-        try {
-            ContentValues values = new ContentValues();
-            values.put(KEY_BILL_NAME, bill.getName());
-            values.put(KEY_BILL_AMOUNT, bill.getAmount());
-            values.put(KEY_BILL_DUE_DATE, bill.getDueDate());
-            values.put(KEY_BILL_IS_PAID, bill.isPaid() ? 1 : 0);
-
-            rowsAffected = db.update(TABLE_BILLS, values, KEY_BILL_ID + " = ?", 
-                                     new String[]{String.valueOf(bill.getId())});
-            db.setTransactionSuccessful();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            db.endTransaction();
-        }
-
-        return rowsAffected;
-    }
-
-    // Delete a bill
-    public void deleteBill(long id) {
-        SQLiteDatabase db = getWritableDatabase();
-        db.beginTransaction();
-        try {
-            db.delete(TABLE_BILLS, KEY_BILL_ID + " = ?", new String[]{String.valueOf(id)});
-            db.setTransactionSuccessful();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            db.endTransaction();
-        }
+        
+        db.close();
+        return upcomingBills;
     }
 }

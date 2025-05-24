@@ -19,6 +19,14 @@
     <string name="bill_amount">Montant</string>
     <string name="bill_due_date">Date d\'échéance</string>
     <string name="bill_is_paid">Déjà payée</string>
+    <string name="recurring_bill_options">Options de facture récurrente</string>
+    <string name="recurring_bill">Cette facture est récurrente</string>
+    <string name="recurrence_type">Type de récurrence</string>
+    <string name="repeat_every">Répéter tous les</string>
+    <string name="days">jours</string>
+    <string name="weeks">semaines</string>
+    <string name="months">mois</string>
+    <string name="years">années</string>
     <string name="save">Enregistrer</string>
     <string name="delete">Supprimer</string>
     <string name="bill_added">Facture ajoutée avec succès</string>
@@ -34,4 +42,29 @@
     <string name="notification_channel_description">Notifications pour les échéances de factures à venir</string>
     <string name="notification_title">Rappel de facture</string>
     <string name="notification_content">%1$s de %2$s est due le %3$s</string>
+
+    <!-- Sorting and Filtering -->
+    <string name="sort_by">Trier par</string>
+    <string name="filter">Filtrer</string>
+    <string name="sort_due_date">Date d\'échéance</string>
+    <string name="sort_amount">Montant</string>
+    <string name="sort_name">Nom</string>
+    <string name="sort_status">Statut</string>
+    
+    <!-- Summary Section -->
+    <string name="summary">Résumé</string>
+    <string name="this_month_bills">À payer ce mois</string>
+    <string name="overdue_bills">Factures en retard</string>
+    <string name="amount_format">%1$.2f DH</string>
+    
+    <!-- Bill Status -->
+    <string name="status_paid">Payée</string>
+    <string name="status_overdue">En retard</string>
+    <string name="status_due_today">Dû aujourd\'hui</string>
+    <string name="status_due_soon">Échéance proche</string>
+    <string name="status_upcoming">À venir</string>
+    
+    <!-- Delete Bill Dialog -->
+    <string name="delete_bill_title">Supprimer la facture</string>
+    <string name="delete_bill_message">Êtes-vous sûr de vouloir supprimer cette facture?</string>
 </resources>

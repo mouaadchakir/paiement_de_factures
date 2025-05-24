@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Facture principale -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M36,28 L72,28 L72,80 L36,80 Z" />
+    
+    <!-- Entête de la facture -->
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M36,28 L72,28 L72,40 L36,40 Z" />
+    
+    <!-- Texte "FACTURE" -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M43,36.5 L45,36.5 L45,33.5 L46,33.5 L46,36.5 L48,36.5 L48,33.5 L49,33.5 L49,36.5 L51,36.5 L51,33.5 L52,33.5 L52,36.5 L54,36.5 L54,33.5 L55,33.5 L55,36.5 L57,36.5 L57,33.5 L58,33.5 L58,36.5 L60,36.5 L60,33.5 L61,33.5 L61,36.5 L63,36.5 L63,33.5 L65,33.5 L65,36.5 Z" />
+    
+    <!-- Lignes de la facture -->
+    <path
+        android:strokeWidth="1"
+        android:strokeColor="#AAAAAA"
+        android:pathData="M40,48 L68,48" />
+    <path
+        android:strokeWidth="1"
+        android:strokeColor="#AAAAAA"
+        android:pathData="M40,56 L68,56" />
+    <path
+        android:strokeWidth="1"
+        android:strokeColor="#AAAAAA"
+        android:pathData="M40,64 L68,64" />
+    <path
+        android:strokeWidth="1"
+        android:strokeColor="#AAAAAA"
+        android:pathData="M40,72 L68,72" />
+    
+    <!-- Total en bas -->
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M48,75 L66,75 L66,77 L48,77 Z" />
+    
+    <!-- Notification cercle rouge -->
+    <path
+        android:fillColor="#F44336"
+        android:pathData="M70,30 A8,8 0 1,1 70,46 A8,8 0 1,1 70,30" />
+    
+    <!-- Symbole d'alarme/notification -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M70,32 L72,36 L68,36 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M70,44 L72,40 L68,40 Z" />
+    <path
+        android:strokeWidth="1.5"
+        android:strokeColor="#FFFFFF"
+        android:pathData="M70,36 L70,40" />
+    
+    <!-- Symbole DH pour monnaie marocaine -->
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M44,66 L46,60 L42,60 L44,54 L50,54 L48,60 L52,60 L50,66 Z" />
+</vector>
