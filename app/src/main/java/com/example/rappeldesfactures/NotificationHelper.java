@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.widget.Toast;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -51,9 +52,9 @@ public class NotificationHelper {
             Calendar notificationTime = Calendar.getInstance();
             notificationTime.setTime(dueDateObj);
             notificationTime.add(Calendar.DAY_OF_MONTH, -1); // Notify 1 day before due date
-            notificationTime.set(Calendar.HOUR_OF_DAY, 10); // Notify at 10:00 AM
-            notificationTime.set(Calendar.MINUTE, 0);
-            notificationTime.set(Calendar.SECOND, 0);
+            notificationTime.set(Calendar.HOUR_OF_DAY, 17); // Notify at 16:00 (4:00 PM)
+            notificationTime.set(Calendar.MINUTE, 45);
+            notificationTime.set(Calendar.SECOND, 16);
             
             // Check if notification time has already passed, in which case notify tomorrow
             Calendar now = Calendar.getInstance();
@@ -84,19 +85,31 @@ public class NotificationHelper {
             // Schedule the notification
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        notificationTime.getTimeInMillis(),
-                        pendingIntent
-                );
+            // Utiliser une notification immédiate pour les tests
+            if (System.currentTimeMillis() + 60000 > notificationTime.getTimeInMillis()) {
+                // Si l'heure de notification est dans moins d'une minute, programmer une notification immédiate
+                Toast.makeText(context, "Notification immédiate programmée...", Toast.LENGTH_SHORT).show();
+                context.sendBroadcast(notificationIntent);
             } else {
-                alarmManager.setExact(
-                        AlarmManager.RTC_WAKEUP,
-                        notificationTime.getTimeInMillis(),
-                        pendingIntent
-                );
+                // Sinon, utiliser des alarmes moins précises qui sont plus susceptibles de fonctionner
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12+
+                    // Pour Android 12+, utiliser une alarme inexacte qui est moins susceptible d'être limitée
+                    if (alarmManager.canScheduleExactAlarms()) {
+                        Toast.makeText(context, "Programmation d'alarme exacte autorisée", Toast.LENGTH_SHORT).show();
+                        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, notificationTime.getTimeInMillis(), pendingIntent);
+                    } else {
+                        Toast.makeText(context, "Programmation d'alarme exacte NON autorisée, utilisation d'alarme inexacte", Toast.LENGTH_LONG).show();
+                        alarmManager.set(AlarmManager.RTC_WAKEUP, notificationTime.getTimeInMillis(), pendingIntent);
+                    }
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) { // Android 6-11
+                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, notificationTime.getTimeInMillis(), pendingIntent);
+                } else { // Versions plus anciennes
+                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, notificationTime.getTimeInMillis(), pendingIntent);
+                }
             }
+            
+            // Afficher un message de débogage pour confirmer la programmation
+            Toast.makeText(context, "Notification programmée pour " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(new Date(notificationTime.getTimeInMillis())), Toast.LENGTH_LONG).show();
         } catch (ParseException e) {
             e.printStackTrace();
         }

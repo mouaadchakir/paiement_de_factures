@@ -142,6 +142,16 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
         
     <!-- Bill list -->
+    <!-- Bouton de test pour les notifications -->
+    <Button
+        android:id="@+id/test_notification_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tester Notification"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="140dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        
     <ListView
         android:id="@+id/bill_list_view"
         android:layout_width="match_parent"
@@ -149,7 +159,7 @@
         android:divider="@color/light_gray"
         android:dividerHeight="1dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:layout_marginTop="140dp" />
+        android:layout_marginTop="180dp" />
 
     <!-- Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
