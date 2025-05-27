@@ -268,7 +268,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             } else if (diffInDays <= 3) {
                 return 2; // Due soon comes third
             } else {
-                return 3; // Upcoming comes fourth
+                return 3; // Upcoming comes fourth yaka ir ivbbi kjjad chia hata tta  hta ht
             }
         } catch (ParseException e) {
             e.printStackTrace();

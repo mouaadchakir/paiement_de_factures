@@ -5,7 +5,7 @@
     <!-- Main Activity -->
     <string name="no_bills">Aucune facture à payer\nAppuyez sur + pour ajouter une facture</string>
     <string name="action_refresh">Actualiser</string>
-
+    
     <!-- Bill Item -->
     <string name="paid">Payée</string>
     <string name="overdue">En retard</string>

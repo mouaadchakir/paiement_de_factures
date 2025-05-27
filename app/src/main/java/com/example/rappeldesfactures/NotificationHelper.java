@@ -52,14 +52,14 @@ public class NotificationHelper {
             Calendar notificationTime = Calendar.getInstance();
             notificationTime.setTime(dueDateObj);
             notificationTime.add(Calendar.DAY_OF_MONTH, -1); // Notify 1 day before due date
-            notificationTime.set(Calendar.HOUR_OF_DAY, 17); // Notify at 16:00 (4:00 PM)
-            notificationTime.set(Calendar.MINUTE, 45);
+            notificationTime.set(Calendar.HOUR_OF_DAY, 10); // Notify at 10:00 (22:00 AM)
+            notificationTime.set(Calendar.MINUTE, 00);
             notificationTime.set(Calendar.SECOND, 16);
             
             // Check if notification time has already passed, in which case notify tomorrow
             Calendar now = Calendar.getInstance();
             if (notificationTime.before(now)) {
-                // If due date is today, notify in 1 hour
+                // If due date is today, notify in 1 hour //
                 if (dueDateObj.getTime() - now.getTimeInMillis() < DAY_IN_MILLIS) {
                     notificationTime.setTimeInMillis(now.getTimeInMillis() + TimeUnit.HOURS.toMillis(1));
                 } else {
