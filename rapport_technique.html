@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapport Technique : Application RappeldesFactures</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            scroll-behavior: smooth;
+        }
+        
+        /* Bouton retour en haut */
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            line-height: 50px;
+            font-size: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            text-decoration: none;
+            transition: background-color 0.3s;
+            z-index: 999;
+        }
+        
+        .back-to-top:hover {
+            background-color: #2980b9;
+        }
+        
+        /* Styles pour la page de titre */
+        .cover-page {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            border-bottom: 2px solid #3498db;
+        }
+        .university {
+            text-transform: uppercase;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .project-title {
+            font-size: 2.5em;
+            color: #3498db;
+            margin: 20px 0;
+        }
+        .subtitle {
+            font-size: 1.2em;
+            color: #555;
+            margin-bottom: 30px;
+        }
+        .student-info {
+            margin: 30px 0;
+        }
+        .date {
+            margin-top: 40px;
+            font-style: italic;
+            color: #777;
+        }
+        
+        /* Styles pour la table des matières */
+        .table-of-contents {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 30px 0;
+        }
+        .table-of-contents h2 {
+            color: #3498db;
+            margin-top: 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .table-of-contents ul {
+            list-style-type: none;
+            padding-left: 10px;
+        }
+        .table-of-contents li {
+            margin-bottom: 8px;
+        }
+        .table-of-contents a {
+            text-decoration: none;
+            color: #333;
+        }
+        .table-of-contents a:hover {
+            color: #3498db;
+            text-decoration: underline;
+        }
+        
+        /* Styles pour les captures d'écran */
+        .screenshot-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .screenshot {
+            max-width: 90%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+        .screenshot-caption {
+            font-style: italic;
+            color: #666;
+            font-size: 0.9em;
+            text-align: center;
+        }
+        .screenshot-placeholder {
+            width: 90%;
+            height: 400px;
+            background-color: #f5f5f5;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #666;
+            font-style: italic;
+            margin: 0 auto 10px auto;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+            position: relative;
+            border-bottom: 1px solid #eee;
+        }
+        h3 {
+            color: #2980b9;
+            margin-top: 20px;
+        }
+        h4 {
+            color: #16a085;
+            margin-top: 15px;
+            font-style: italic;
+        }
+        ul {
+            padding-left: 20px;
+            list-style-type: none;
+        }
+        
+        ul li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        ul li:before {
+            content: '\2022';
+            color: #3498db;
+            font-weight: bold;
+            font-size: 18px;
+            position: absolute;
+            left: 0;
+            top: -1px;
+        }
+        
+        ul li ul li:before {
+            content: '\25E6';
+            color: #7fb3d5;
+            font-size: 16px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .conclusion {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            margin-top: 30px;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            font-size: 0.9em;
+        }
+        .code-block {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin: 15px 0;
+            line-height: 1.5;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #3498db;
+        }
+        
+        /* Coloration syntaxique pour Java */
+        .code-keyword { color: #569cd6; } /* blue */
+        .code-string { color: #ce9178; }  /* orange */
+        .code-comment { color: #6a9955; }  /* green */
+        .code-type { color: #4ec9b0; }     /* teal */
+        .code-number { color: #b5cea8; }    /* light green */
+        .code-method { color: #dcdcaa; }    /* yellow */
+        .note {
+            background-color: #e3f2fd;
+            padding: 10px;
+            border-left: 4px solid #2196F3;
+            margin: 15px 0;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        @media print {
+            body {
+                padding: 0;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page de titre -->
+    <div class="cover-page">
+        <div class="university">Université IBN tofail kénitra</div>
+        <div class="project-title">Rapport Technique</div>
+        <div class="subtitle">Application Mobile de Rappel des Factures</div>
+        
+        <div class="student-info">
+            <p><strong>Réalisé par :</strong> MOUAD CHAKIR</p>
+            <p><strong>Classe :</strong>DAWM</p>
+            <p><strong>Année Académique :</strong> 2024-2025</p>
+        </div>
+        
+        <div class="date">Mai 2025</div>
+    </div>
+    
+    <!-- Table des matières -->
+    <div class="table-of-contents">
+        <h2>Table des Matières</h2>
+        <ul>
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#architecture">1. Description technique de l'architecture et des composants utilisés</a>
+                <ul>
+                    <li><a href="#architecture-globale">1.1. Architecture globale</a></li>
+                    <li><a href="#composants-principaux">1.2. Composants principaux</a></li>
+                    <li><a href="#structure-projet">1.3. Structure du projet</a></li>
+                </ul>
+            </li>
+            <li><a href="#fonctionnalites">2. Présentation des fonctionnalités implémentées</a>
+                <ul>
+                    <li><a href="#gestion-factures">2.1. Gestion complète des factures</a></li>
+                    <li><a href="#visualisation">2.2. Visualisation et organisation avancée</a></li>
+                    <li><a href="#rappels">2.3. Système de rappels sophistiqué</a></li>
+                    <li><a href="#interface">2.4. Interface utilisateur moderne</a></li>
+                </ul>
+            </li>
+            <li><a href="#analyse">3. Analyse critique de l'approche suivie</a>
+                <ul>
+                    <li><a href="#choix-techniques">3.1. Choix techniques et justifications</a></li>
+                    <li><a href="#defis">3.2. Défis rencontrés et solutions apportées</a></li>
+                    <li><a href="#ameliorations">3.3. Pistes d'amélioration et évolutions futures</a></li>
+                </ul>
+            </li>
+            <li><a href="#conclusion">Conclusion</a></li>
+        </ul>
+    </div>
+    
+    <!-- Introduction -->
+    <div id="introduction" class="section">
+        <h2>Introduction</h2>
+        <p>Ce rapport présente le développement d'une application mobile Android appelée "RappeldesFactures", conçue pour aider les utilisateurs à gérer leurs factures et à recevoir des rappels avant les échéances de paiement.</p>
+        
+        <p>Dans un contexte où la gestion des factures devient de plus en plus complexe avec la multiplication des services et abonnements, cette application répond à un besoin concret : éviter les retards de paiement et les pénalités associées grâce à un système de rappel fiable et personnalisable.</p>
+        
+        <p>L'application permet aux utilisateurs d'enregistrer leurs factures avec toutes les informations pertinentes (nom, montant, date d'échéance), de les organiser selon différents critères, et surtout, de recevoir des notifications la veille des échéances à une heure spécifique (17:45).</p>
+    </div>
+    
+    <h1 id="architecture">Rapport Technique : Application RappeldesFactures</h1>
+
+    <!-- Capture d'écran de l'application 
+    <div class="screenshot-container">
+        <div class="screenshot-placeholder">
+            <p>Ajouter ici la capture d'écran de l'écran principal de l'application</p>
+            <p>Remplacer cette div par: &lt;img src="chemin/vers/image.png" class="screenshot" alt="Écran principal de RappeldesFactures"&gt;</p>
+        </div>
+        <p class="screenshot-caption">Figure 1: Aperçu de l'écran principal de l'application RappeldesFactures</p>
+    </div>-->
+    
+    <div id="architecture" class="section">
+        <h2>1. Description technique de l'architecture et des composants utilisés</h2>
+        
+        <h3 id="architecture-globale">Architecture globale</h3>
+        <p>L'application RappeldesFactures est développée sous Android en utilisant le langage Java. Elle suit une architecture classique MVC (Modèle-Vue-Contrôleur) avec une séparation claire entre les données, l'interface utilisateur et la logique métier. Cette approche permet une maintenance facilitée et une évolution progressive de l'application.</p>
+        
+        <p>L'architecture est organisée comme suit :</p>
+        <ul>
+            <li><strong>Modèle</strong> : Classes de données (Bill), helper de base de données (BillDatabaseHelper)</li>
+            <li><strong>Vue</strong> : Fichiers XML de mise en page, adaptateurs personnalisés</li>
+            <li><strong>Contrôleur</strong> : Activités et services qui orchestrent les interactions</li>
+        </ul>
+
+        <h3 id="composants-principaux">Composants principaux</h3>
+        <ol>
+            <li>
+                <strong>Base de données SQLite</strong>
+                <ul>
+                    <li>Implémentée via la classe <code>BillDatabaseHelper</code> qui étend <code>SQLiteOpenHelper</code></li>
+                    <li>Structure de la table des factures :</li>
+                </ul>
+                <div class="code-block">
+                CREATE TABLE bills (
+                    _id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    amount REAL NOT NULL,
+                    due_date TEXT NOT NULL,
+                    is_paid INTEGER DEFAULT 0,
+                    notes TEXT,
+                    created_at TEXT,
+                    updated_at TEXT
+                )
+                </div>
+                <ul>
+                    <li>Méthodes principales implémentées :</li>
+                    <ul>
+                        <li><code>addBill()</code> : Ajoute une nouvelle facture</li>
+                        <li><code>updateBill()</code> : Met à jour une facture existante</li>
+                        <li><code>deleteBill()</code> : Supprime une facture par son ID</li>
+                        <li><code>getAllBills()</code> : Récupère toutes les factures</li>
+                        <li><code>getBill()</code> : Récupère une facture spécifique par ID</li>
+                        <li><code>getUpcomingBills(int days)</code> : Récupère les factures à venir dans les X prochains jours</li>
+                    </ul>
+                </ul>
+            </li>
+            <li>
+                <strong>Interface utilisateur</strong>
+                <ul>
+                    <li><strong>MainActivity</strong> : Écran principal avec liste des factures, statistiques et options de filtre/tri</li>
+                    <li><strong>AddEditBillActivity</strong> : Écran d'ajout et modification des factures</li>
+                    <li><strong>Layouts XML principaux</strong> :</li>
+                    <ul>
+                        <li><code>activity_main.xml</code> : Layout principal avec toolbar, statistiques et liste</li>
+                        <li><code>activity_add_edit_bill.xml</code> : Formulaire d'ajout/modification</li>
+                        <li><code>bill_item.xml</code> : Template pour chaque élément de la liste des factures</li>
+                    </ul>
+                    <li><strong>Ressources graphiques personnalisées</strong> :</li>
+                    <ul>
+                        <li><code>app_logo.xml</code> : Logo vectoriel de l'application</li>
+                        <li><code>bill_reminder_foreground.xml</code> : Icône vectorielle pour les notifications</li>
+                        <li><code>status_background.xml</code> : Arrière-plans colorés pour les différents statuts</li>
+                    </ul>
+                    <li><strong>Adaptateur personnalisé</strong> : <code>BillAdapter</code> pour l'affichage dynamique des factures avec code couleur selon leur statut</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Système de notifications</strong>
+                <ul>
+                    <li><strong>Double approche pour garantir la fiabilité</strong> :</li>
+                    <ul>
+                        <li><code>NotificationHelper</code> : Programmation des notifications via AlarmManager
+                            <div class="note">Méthode <code>scheduleBillReminder()</code> configurée pour notifier la veille de l'échéance à 17:45</div>
+                        </li>
+                        <li><code>BillNotificationService</code> : Service en arrière-plan vérifiant périodiquement les factures à échéance
+                            <div class="note">Vérifie toutes les 5 minutes si des factures sont dues le lendemain et s'il est l'heure d'envoyer des notifications (autour de 17:45)</div>
+                        </li>
+                    </ul>
+                    <li><code>NotificationReceiver</code> : Gère la réception des intents de notification et construit les notifications Android</li>
+                    <li><strong>Gestion des permissions selon les versions d'Android</strong> :</li>
+                    <ul>
+                        <li>Android 13+ (API 33+) : Demande explicite de <code>POST_NOTIFICATIONS</code></li>
+                        <li>Android 12+ (API 31+) : Gestion de <code>SCHEDULE_EXACT_ALARM</code></li>
+                        <li>Dialogue utilisateur pour guider vers les paramètres système si nécessaire</li>
+                    </ul>
+                    <li><strong>Bouton de test de notification</strong> ajouté dans l'interface principale pour vérifier le fonctionnement</li>
+                </ul>
+                <h4>Extrait du code de gestion des notifications</h4>
+                <div class="code-block">
+                // Programmation d'une notification à une heure précise
+                notificationTime.set(Calendar.HOUR_OF_DAY, 17);
+                notificationTime.set(Calendar.MINUTE, 45);
+                notificationTime.set(Calendar.SECOND, 16);
+                
+                // Utilisation d'une méthode adaptée selon la version d'Android
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12+
+                    if (alarmManager.canScheduleExactAlarms()) {
+                        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, 
+                                notificationTime.getTimeInMillis(), pendingIntent);
+                    } else {
+                        alarmManager.set(AlarmManager.RTC_WAKEUP, 
+                                notificationTime.getTimeInMillis(), pendingIntent);
+                    }
+                }
+                </div>
+            </li>
+            <li>
+                <strong>Gestion des états et persistance</strong>
+                <ul>
+                    <li><strong>Sauvegarde de l'état</strong> lors des changements de configuration (rotation d'écran) :</li>
+                    <ul>
+                        <li>Utilisation de <code>onSaveInstanceState()</code> et <code>onRestoreInstanceState()</code></li>
+                        <li>Conservation des filtres et tris actifs</li>
+                    </ul>
+                    <li><strong>Persistance des préférences</strong> :</li>
+                    <ul>
+                        <li>Dernier mode de tri utilisé</li>
+                        <li>Filtres appliqués précédemment</li>
+                    </ul>
+                    <li><strong>Détection et réaction aux changements système</strong> :</li>
+                    <ul>
+                        <li>Récepteur pour <code>BOOT_COMPLETED</code> pour reprogrammer les notifications après redémarrage</li>
+                    </ul>
+                </ul>
+            </li>
+        </ol>
+
+        <h3 id="structure-projet">Structure du projet</h3>
+        <p>L'organisation du code suit les conventions Android :</p>
+        <ul>
+            <li><strong>java/com.example.rappeldesfactures</strong> :</li>
+            <ul>
+                <li>Classes Java principales : Activités, services, adaptateurs, helpers</li>
+                <li>Modèle de données (Bill.java)</li>
+                <li>Gestionnaires spécialisés (NotificationHelper.java, BillDatabaseHelper.java)</li>
+            </ul>
+            <li><strong>res/layout</strong> : Fichiers XML définissant l'interface utilisateur</li>
+            <li><strong>res/drawable</strong> : Ressources graphiques et icônes</li>
+            <li><strong>res/values</strong> : Chaînes de caractères, couleurs, styles et dimensions</li>
+            <li><strong>res/menu</strong> : Définitions des menus</li>
+            <li><strong>AndroidManifest.xml</strong> : Configuration de l'application, déclaration des activités et permissions</li>
+        </ul>
+    </div>
+
+    <div id="fonctionnalites" class="section">
+        <h2>2. Présentation des fonctionnalités implémentées</h2>
+
+        <h3 id="gestion-factures">Gestion complète des factures</h3>
+        <h4>Création et modification des factures</h4>
+        <ul>
+            <li><strong>Formulaire complet</strong> :
+                <ul>
+                    <li>Nom de la facture (ex: "Facture d'électricité", "Loyer")</li>
+                    <li>Montant avec gestion des décimales (formaté en DH)</li>
+                    <li>Date d'échéance avec sélecteur de date intuitif</li>
+                    <li>Notes optionnelles pour ajouter des informations complémentaires</li>
+                    <li>Case à cocher pour marquer une facture comme payée</li>
+                </ul>
+            </li>
+            <li><strong>Validation des données</strong> :
+                <ul>
+                    <li>Contrôles de validité pour s'assurer que les champs obligatoires sont remplis</li>
+                    <li>Validation du format du montant</li>
+                    <li>Gestion des erreurs avec messages explicites</li>
+                </ul>
+            </li>
+            <li><strong>Stockage sécurisé</strong> :
+                <ul>
+                    <li>Sauvegarde immédiate dans la base de données SQLite</li>
+                    <li>Transactions pour garantir l'intégrité des données</li>
+                    <li>Horodatage de la création et de la dernière modification</li>
+                </ul>
+            </li>
+            <li><strong>Suppression de factures</strong> :
+                <ul>
+                    <li>Suppression sécurisée avec dialogue de confirmation</li>
+                    <li>Annulation des notifications associées lors de la suppression</li>
+                </ul>
+            </li>
+        </ul>
+        
+        <!-- Capture d'écran du formulaire d'ajout/modification -->
+        <div class="screenshot-container">
+            <img src="2.jpeg" class="screenshot" style="max-width:90%; height:auto;">
+            <p class="screenshot-caption">Figure 2: Formulaire d'ajout et de modification des factures</p>
+        </div>
+        
+        <div class="note">
+            Exemple d'implémentation de la méthode de mise à jour d'une facture :
+            <div class="code-block">
+            public int updateBill(Bill bill) {
+                SQLiteDatabase db = this.getWritableDatabase();
+                ContentValues values = new ContentValues();
+                
+                values.put(COLUMN_NAME, bill.getName());
+                values.put(COLUMN_AMOUNT, bill.getAmount());
+                values.put(COLUMN_DUE_DATE, bill.getDueDate());
+                values.put(COLUMN_IS_PAID, bill.isPaid() ? 1 : 0);
+                values.put(COLUMN_NOTES, bill.getNotes());
+                values.put(COLUMN_UPDATED_AT, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", 
+                        Locale.getDefault()).format(new Date()));
+                
+                return db.update(TABLE_BILLS, values, COLUMN_ID + " = ?", 
+                        new String[]{String.valueOf(bill.getId())});
+            }
+            </div>
+        </div>
+
+        <h3 id="visualisation">Visualisation et organisation avancée des factures</h3>
+        <h4>Interface de liste principale</h4>
+        <ul>
+            <li><strong>Affichage informatif</strong> de chaque facture :
+                <ul>
+                    <li>Nom de la facture en titre principal</li>
+                    <li>Montant formaté avec le symbole de devise (DH)</li>
+                    <li>Date d'échéance avec formatage lisible (ex: "15 Mai 2025")</li>
+                    <li>Étiquette de statut visuelle avec code couleur :</li>
+                    <ul>
+                        <li><span style="color:red;">Rouge</span> pour les factures en retard</li>
+                        <li><span style="color:orange;">Orange</span> pour les factures dues aujourd'hui</li>
+                        <li><span style="color:blue;">Bleu</span> pour les factures à venir</li>
+                        <li><span style="color:green;">Vert</span> pour les factures payées</li>
+                    </ul>
+                </ul>
+            </li>
+            <li><strong>Fonctionnalités de tri avancées</strong> via le menu déroulant en haut de l'écran :
+                <ul>
+                    <li><strong>Date d'échéance</strong> : Ordonne les factures de la plus proche échéance à la plus éloignée</li>
+                    <li><strong>Montant</strong> : Classe les factures du montant le plus élevé au plus faible</li>
+                    <li><strong>Nom</strong> : Trie alphabétiquement les factures par leur nom</li>
+                    <li><strong>Statut</strong> : Organise les factures par priorité (en retard, dues aujourd'hui, à venir, payées)</li>
+                </ul>
+            </li>
+            <li><strong>Système de filtrage multi-critères</strong> accessible via le bouton de filtre :
+                <ul>
+                    <li>Dialogue modal permettant de sélectionner plusieurs filtres simultanément</li>
+                    <li>Filtres disponibles :</li>
+                    <ul>
+                        <li><strong>Toutes les factures</strong> : Affiche l'ensemble des factures</li>
+                        <li><strong>Factures non payées</strong> : Montre uniquement les factures en attente de paiement</li>
+                        <li><strong>Factures en retard</strong> : Filtre les factures dont la date d'échéance est dépassée</li>
+                        <li><strong>Factures du mois en cours</strong> : Affiche les factures dues dans le mois actuel</li>
+                    </ul>
+                </ul>
+            </li>
+        </ul>
+        
+        <!-- Capture d'écran des options de tri et filtrage -->
+        <div class="screenshot-container">
+            <img src="1.jpeg" class="screenshot" alt="Options de tri et filtrage" style="max-width:90%; height:auto;">
+            <p class="screenshot-caption">Figure 3: Interface de tri et filtrage des factures</p>
+        </div>
+        
+        <h4>Tableau de bord et statistiques</h4>
+        <ul>
+            <li><strong>Panneau de statistiques</strong> en haut de l'écran principal :</li>
+            <ul>
+                <li><strong>Montant total des factures du mois</strong> : Calculé en temps réel</li>
+                <li><strong>Nombre de factures en retard</strong> : Indicateur visuel avec compteur</li>
+            </ul>
+            <li><strong>Mise à jour automatique</strong> des statistiques lors de :</li>
+            <ul>
+                <li>L'ajout d'une nouvelle facture</li>
+                <li>La modification d'une facture existante</li>
+                <li>Le marquage d'une facture comme payée</li>
+                <li>La suppression d'une facture</li>
+            </ul>
+        </ul>
+        
+        <div class="note">
+            Extrait du code de calcul des statistiques :
+            <div class="code-block">
+            <span class="code-keyword">private</span> <span class="code-keyword">void</span> <span class="code-method">updateSummaryData</span>() {
+                <span class="code-type">double</span> thisMonthTotal = <span class="code-number">0</span>;
+                <span class="code-type">int</span> overdueCount = <span class="code-number">0</span>;
+                
+                <span class="code-comment">// Get current month and year</span>
+                <span class="code-type">Calendar</span> cal = <span class="code-type">Calendar</span>.getInstance();
+                <span class="code-type">int</span> currentMonth = cal.get(<span class="code-type">Calendar</span>.MONTH);
+                <span class="code-type">int</span> currentYear = cal.get(<span class="code-type">Calendar</span>.YEAR);
+                <span class="code-type">Date</span> today = cal.getTime();
+                
+                <span class="code-keyword">for</span> (<span class="code-type">Bill</span> bill : billList) {
+                    <span class="code-comment">// Skip paid bills</span>
+                    <span class="code-keyword">if</span> (bill.isPaid()) <span class="code-keyword">continue</span>;
+                    
+                    <span class="code-keyword">try</span> {
+                        <span class="code-comment">// Check if bill is overdue</span>
+                        <span class="code-type">Date</span> dueDate = dateFormat.parse(bill.getDueDate());
+                        <span class="code-keyword">if</span> (dueDate != <span class="code-keyword">null</span> && dueDate.before(today)) {
+                            overdueCount++;
+                        }
+                        
+                        <span class="code-comment">// Check if bill is due this month</span>
+                        <span class="code-type">Calendar</span> dueCal = <span class="code-type">Calendar</span>.getInstance();
+                        dueCal.setTime(dueDate != <span class="code-keyword">null</span> ? dueDate : <span class="code-keyword">new</span> <span class="code-type">Date</span>());
+                        <span class="code-type">int</span> billMonth = dueCal.get(<span class="code-type">Calendar</span>.MONTH);
+                        <span class="code-type">int</span> billYear = dueCal.get(<span class="code-type">Calendar</span>.YEAR);
+                        
+                        <span class="code-keyword">if</span> (billMonth == currentMonth && billYear == currentYear) {
+                            thisMonthTotal += bill.getAmount();
+                        }
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                }
+                
+                // Update the UI
+                thisMonthAmountView.setText(String.format(Locale.getDefault(),
+                        getString(R.string.amount_format), thisMonthTotal));
+                overdueCountView.setText(String.valueOf(overdueCount));
+            }
+            </div>
+        </div>
+
+        <h3 id="rappels">Système de rappels sophistiqué</h3>
+        <h4>Architecture double pour une fiabilité maximale</h4>
+        
+        <!-- Capture d'écran des notifications -->
+        <div class="screenshot-container">
+            <img src="3.jpeg" class="screenshot" alt="Notification de rappel" style="max-width:90%; height:auto;">
+            <p class="screenshot-caption">Figure 4: Exemple de notification de rappel de facture</p>
+        </div>
+        
+        <ul>
+            <li><strong>Notifications programmées par AlarmManager</strong> :</li>
+            <ul>
+                <li>Configuration précise des notifications pour la veille de l'échéance à 17:45</li>
+                <li>Gestion adaptée selon la version d'Android (setExactAndAllowWhileIdle pour Android 6+)</li>
+                <li>Vérification et demande de la permission SCHEDULE_EXACT_ALARM sur Android 12+</li>
+            </ul>
+            <li><strong>Service de vérification périodique</strong> :</li>
+            <ul>
+                <li>Service en arrière-plan vérifiant toutes les 5 minutes les factures à échéance</li>
+                <li>Déclenchement de notifications dans la fenêtre horaire cible (17:40-17:50)</li>
+                <li>Mécanisme de reprise après redémarrage de l'appareil</li>
+            </ul>
+            <li><strong>Notifications contextuelles</strong> :</li>
+            <ul>
+                <li>Titre et contenu personnalisés incluant le nom de la facture et le montant</li>
+                <li>Formatage de la date en format lisible ("25 Mai 2025")</li>
+                <li>Action au clic ouvrant l'application directement sur la facture concernée</li>
+            </ul>
+            <li><strong>Bouton de test</strong> ajouté à l'interface principale :</li>
+            <ul>
+                <li>Permet de vérifier immédiatement le fonctionnement des notifications</li>
+                <li>Utile pour diagnostiquer les problèmes de permissions ou d'optimisation de batterie</li>
+            </ul>
+            
+            <!-- Capture d'écran du bouton de test de notification -->
+            <div class="screenshot-container">
+                <img src="1.jpeg" class="screenshot" alt="Bouton de test de notification" style="max-width:90%; height:auto;">
+                <p class="screenshot-caption">Figure 5: Bouton de test de notification dans l'interface principale</p>
+            </div>
+        </ul>
+        
+        <h4>Gestion avancée des permissions</h4>
+        <ul>
+            <li><strong>Demande contextuelle de permissions</strong> :</li>
+            <ul>
+                <li>Vérification automatique au démarrage de l'application</li>
+                <li>Dialog explicatif détaillant pourquoi les permissions sont nécessaires</li>
+                <li>Redirection vers les paramètres système pour les permissions spéciales</li>
+            </ul>
+            <li><strong>Adaptation aux différentes versions d'Android</strong> :</li>
+            <ul>
+                <li>Android 13+ (API 33+) : Gestion de POST_NOTIFICATIONS</li>
+                <li>Android 12+ (API 31+) : Gestion de SCHEDULE_EXACT_ALARM</li>
+                <li>Compatibilité descendante pour les versions antérieures</li>
+            </ul>
+        </ul>
+
+        <h3 id="interface">Interface utilisateur moderne et intuitive</h3>
+        <h4>Design et ergonomie</h4>
+        <ul>
+            <li><strong>Logo et identité visuelle</strong> :</li>
+            <ul>
+                <li>Création d'un logo vectoriel spécifique à l'application</li>
+                <li>Icône représentant une facture avec un rappel (horloge)</li>
+                <li>Palette de couleurs professionnelle et cohérente</li>
+            </ul>
+            <li><strong>Composants Material Design</strong> :</li>
+            <ul>
+                <li>Utilisation du Floating Action Button (FAB) pour l'ajout rapide de factures</li>
+                <li>Cards pour représenter chaque facture avec une hiérarchie visuelle claire</li>
+                <li>Spinners et dialogues respectant les guidelines Material Design</li>
+            </ul>
+            <li><strong>Navigation fluide et intuitive</strong> :</li>
+            <ul>
+                <li>Transitions animées entre les écrans</li>
+                <li>Retour logique entre les activités (hierarchical navigation)</li>
+                <li>Menu d'options accessible via la barre supérieure</li>
+            </ul>
+            <li><strong>Interface responsive</strong> :</li>
+            <ul>
+                <li>Adaptation automatique aux différentes tailles d'écrans</li>
+                <li>Gestion correcte des rotations d'écran avec sauvegarde d'état</li>
+                <li>Utilisation d'unités de mesure relatives pour garantir une mise à l'échelle correcte</li>
+            </ul>
+        </ul>
+    </div>
+
+    <div id="analyse" class="section">
+        <h2>3. Analyse critique de l'approche suivie</h2>
+
+        <h3 id="choix-techniques">Choix techniques et justifications</h3>
+        <ul>
+            <li><strong>Java vs Kotlin</strong> :
+                <ul>
+                    <li>L'application est développée en Java, un choix pragmatique et adapté au contexte du projet</li>
+                    <li><strong>Avantages</strong> : Maturité du langage, large base de documentation, stabilité des APIs</li>
+                    <li><strong>Inconvénients</strong> : Code plus verbeux, absence de fonctionnalités modernes comme le null-safety</li>
+                    <li><strong>Justification</strong> : La familiarité avec Java a permis un développement plus rapide et efficace, évitant la courbe d'apprentissage de Kotlin</li>
+                </ul>
+            </li>
+            <li><strong>SQLite natif vs Room</strong> :
+                <ul>
+                    <li>Utilisation directe de l'API SQLite plutôt que la bibliothèque Room de Jetpack</li>
+                    <li><strong>Avantages</strong> : Contrôle précis des requêtes SQL, absence de dépendances supplémentaires</li>
+                    <li><strong>Inconvénients</strong> : Code plus verbeux, pas de vérification à la compilation, risques d'erreurs SQL</li>
+                    <li><strong>Justification</strong> : Le modèle de données relativement simple ne nécessitait pas l'infrastructure complète de Room</li>
+                </ul>
+            </li>
+            <li><strong>Double approche pour les notifications</strong> :
+                <ul>
+                    <li>Implémentation de deux mécanismes complémentaires (AlarmManager + Service)</li>
+                    <li><strong>Avantages</strong> : Redondance assurant une meilleure fiabilité des notifications, contournement des restrictions d'Android</li>
+                    <li><strong>Inconvénients</strong> : Complexité accrue du code, consommation de ressources potentiellement plus élevée</li>
+                    <li><strong>Justification</strong> : Les tests ont démontré que cette approche était nécessaire pour garantir la fiabilité des notifications sur diverses versions d'Android</li>
+                </ul>
+            </li>
+            <li><strong>Interfaces XML traditionnelles vs Jetpack Compose</strong> :
+                <ul>
+                    <li>Construction des interfaces utilisateur avec des layouts XML classiques</li>
+                    <li><strong>Avantages</strong> : Cohérence avec le reste du code, outils de prévisualisation stables</li>
+                    <li><strong>Inconvénients</strong> : Moins de flexibilité pour les interfaces dynamiques, code plus verbeux</li>
+                    <li><strong>Justification</strong> : L'utilisation des layouts XML traditionnels a permis d'avancer rapidement sans introduire de nouvelles technologies</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3 id="defis">Défis rencontrés et solutions apportées</h3>
+        <ul>
+            <li><strong>Restrictions d'Android sur les alarmes exactes</strong> :
+                <ul>
+                    <li><strong>Problème</strong> : Android 12+ impose des restrictions sévères sur l'utilisation des alarmes exactes (setExact, setExactAndAllowWhileIdle)</li>
+                    <li><strong>Impact</strong> : Les notifications n'apparaissaient pas à l'heure exacte configurée (17:45)</li>
+                    <li><strong>Solution</strong> : 
+                        <ol>
+                            <li>Implémentation de la permission SCHEDULE_EXACT_ALARM dans le manifeste</li>
+                            <li>Dialogue guidant l'utilisateur pour activer cette permission dans les paramètres système</li>
+                            <li>Service de vérification périodique comme mécanisme de secours</li>
+                        </ol>
+                    </li>
+                    <li><strong>Résultat</strong> : Fiabilité significativement améliorée des notifications sur les appareils Android récents</li>
+                </ul>
+            </li>
+            <li><strong>Gestion des permissions pour les notifications</strong> :
+                <ul>
+                    <li><strong>Problème</strong> : Android 13+ exige une permission explicite (POST_NOTIFICATIONS) pour afficher des notifications</li>
+                    <li><strong>Impact</strong> : Les notifications n'apparaissaient pas sur les appareils Android 13+ sans autorisation explicite</li>
+                    <li><strong>Solution</strong> : 
+                        <ol>
+                            <li>Détection de la version d'Android à l'exécution</li>
+                            <li>Implémentation d'une demande de permission à l'utilisateur</li>
+                            <li>Gestion du résultat via onRequestPermissionsResult</li>
+                        </ol>
+                    </li>
+                    <li><strong>Résultat</strong> : Expérience utilisateur améliorée avec une explication claire de la nécessité des notifications</li>
+                </ul>
+            </li>
+            <li><strong>Débogage des notifications</strong> :
+                <ul>
+                    <li><strong>Problème</strong> : Difficulté à identifier pourquoi certaines notifications n'apparaissaient pas</li>
+                    <li><strong>Impact</strong> : Expérience utilisateur dégradée, fonctionnalité principale compromise</li>
+                    <li><strong>Solution</strong> : 
+                        <ol>
+                            <li>Ajout d'un bouton de test de notification dans l'interface principale</li>
+                            <li>Messages Toast de débogage indiquant quand une notification est programmée</li>
+                            <li>Logs détaillés pour suivre le cycle de vie des notifications</li>
+                        </ol>
+                    </li>
+                    <li><strong>Résultat</strong> : Identification plus rapide des problèmes et solution efficace</li>
+                </ul>
+            </li>
+            <li><strong>Optimisation des performances</strong> :
+                <ul>
+                    <li><strong>Problème</strong> : Risque de ralentissements lors du chargement des listes de factures volumineuses</li>
+                    <li><strong>Solution</strong> : 
+                        <ol>
+                            <li>Utilisation de ViewHolder pattern dans l'adaptateur</li>
+                            <li>Chargement asynchrone des données de la base</li>
+                            <li>Optimisation des requêtes SQL avec indexation appropriée</li>
+                        </ol>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3 id="ameliorations">Pistes d'amélioration et évolutions futures</h3>
+        <ul>
+            <li><strong>Modernisation technique</strong> :
+                <ul>
+                    <li><strong>Migration vers Kotlin</strong> : Réécriture progressive en Kotlin pour bénéficier de la concision et des fonctionnalités modernes du langage</li>
+                    <li><strong>Adoption de Jetpack Compose</strong> : Pour des interfaces plus dynamiques et un code plus déclaratif</li>
+                    <li><strong>Implémentation de Room</strong> : Pour une gestion plus robuste de la base de données avec typage fort et vérification à la compilation</li>
+                    <li><strong>Architecture MVVM</strong> : Refactorisation vers Model-View-ViewModel pour une meilleure séparation des préoccupations</li>
+                </ul>
+            </li>
+            <li><strong>Fonctionnalités additionnelles</strong> :
+                <ul>
+                    
+                    <li><strong>Catégorisation des factures</strong> : Ajout de catégories (loyer, électricité, téléphone, etc.) pour une meilleure organisation</li>
+                    <li><strong>Factures récurrentes</strong> : Gestion automatisée des factures périodiques (mensuelles, trimestrielles, annuelles)</li>
+                    <li><strong>Scan de factures</strong> : Utilisation de la caméra pour scanner et extraire automatiquement les informations des factures papier</li>
+                </ul>
+            </li>
+            <li><strong>Améliorations UX/UI</strong> :
+                <ul>
+                    <li><strong>Mode sombre</strong> : Implémentation d'un thème sombre pour réduire la fatigue oculaire</li>
+                    <li><strong>Widgets d'accueil</strong> : Création de widgets pour l'écran d'accueil affichant les prochaines échéances</li>
+                    <li><strong>Animations améliorées</strong> : Transitions et animations plus fluides pour une expérience utilisateur premium</li>
+                    <li><strong>Personnalisation accrue</strong> : Permettre à l'utilisateur de personnaliser les couleurs, l'heure des notifications, etc.</li>
+                </ul>
+            </li>
+            <li><strong>Fonctionnalités avancées</strong> :
+                <ul>
+                    <li><strong>Statistiques et analyses</strong> : Graphiques et visualisations des dépenses par catégorie, mois, année</li>
+                    <li><strong>Intégration bancaire</strong> : Connexion sécurisée avec les API bancaires pour vérifier automatiquement les paiements</li>
+                    <li><strong>Paiements intégrés</strong> : Permettre le paiement direct des factures via l'application</li>
+                    <li><strong>Rappels intelligents</strong> : Utilisation de l'IA pour suggérer des moments optimaux pour les rappels basés sur les habitudes de l'utilisateur</li>
+                </ul>
+            </li>
+            <li><strong>Optimisations techniques</strong> :
+                <ul>
+                    <li><strong>Amélioration de l'utilisation de la batterie</strong> : Optimisation du service de notifications pour réduire l'impact sur la batterie</li>
+                    <li><strong>Tests automatisés</strong> : Mise en place de tests unitaires et d'intégration pour assurer la stabilité</li>
+                    <li><strong>Support multi-plateforme</strong> : Exploration de solutions comme Flutter ou React Native pour une version iOS</li>
+                </ul>
+            </li>
+        </ul>
+
+        <div id="conclusion" class="conclusion">
+            <h3>Conclusion</h3>
+            <p>L'application RappeldesFactures répond efficacement au besoin de rappel et de gestion des factures avec une interface intuitive et des fonctionnalités bien pensées. Malgré les défis techniques posés par les restrictions des systèmes Android récents, l'application a su s'adapter grâce à une approche pragmatique et innovante, notamment avec le système de double vérification pour les notifications.</p>
+            
+            <p>Les choix techniques ont privilégié la fiabilité et la compatibilité avec diverses versions d'Android, tout en assurant une expérience utilisateur fluide. La solution mise en place pour les notifications à 17:45 illustre particulièrement bien cette adaptation aux contraintes du système.</p>
+            
+            <p>Les pistes d'amélioration identifiées ouvrent la voie à de nombreuses évolutions futures qui pourraient transformer cette application de simple rappel en un véritable outil de gestion financière personnelle. L'architecture actuelle, bien que basée sur des technologies éprouvées, offre une base solide pour ces futures innovations.</p>
+        </div>
+    </div>
+
+    <div class="no-print" style="margin-top: 30px; text-align: center; color: #777;">
+        <p>Pour imprimer ce rapport en PDF, utilisez la fonction d'impression de votre navigateur (Ctrl+P) et choisissez "Enregistrer au format PDF".</p>
+    </div>
+    
+    <!-- Bouton retour en haut -->
+    <a href="#top" class="back-to-top">↑</a>
+    
+    <script>
+        // Animer le défilement vers les ancres
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+        
+        // Afficher/masquer le bouton retour en haut
+        window.addEventListener('scroll', function() {
+            const backToTop = document.querySelector('.back-to-top');
+            if (window.scrollY > 300) {
+                backToTop.style.display = 'block';
+            } else {
+                backToTop.style.display = 'none';
+            }
+        });
+        
+        // Initialiser l'état du bouton
+        document.querySelector('.back-to-top').style.display = 'none';
+    </script>
+</body>
+</html>
