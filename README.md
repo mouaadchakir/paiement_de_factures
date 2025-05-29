@@ -1,9 +1,11 @@
 # Rappel de Paiement de Factures (Bill Payment Reminder)
 
 Application Android native en Java qui sert de rappel pour le paiement de factures.
-
-## Fonctionnalités
+<img src="1.jpeg">
 <img src="2.jpeg">
+<img src="3.jpeg">
+## Fonctionnalités
+
 - Ajout de factures avec nom, montant et date d'échéance
 - Stockage local des données avec SQLite
 - Affichage des factures à venir dans une liste
