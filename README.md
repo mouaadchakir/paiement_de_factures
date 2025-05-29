@@ -3,7 +3,7 @@
 Application Android native en Java qui sert de rappel pour le paiement de factures.
 
 ## Fonctionnalités
-
+<img src=
 - Ajout de factures avec nom, montant et date d'échéance
 - Stockage local des données avec SQLite
 - Affichage des factures à venir dans une liste
