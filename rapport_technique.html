@@ -184,6 +184,83 @@
             color: #7fb3d5;
             font-size: 16px;
         }
+        
+        /* Style pour les listes numérotées */
+        ol {
+            counter-reset: item;
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        
+        /* Styles optimisés pour l'impression */
+        @media print {
+            body {
+                font-size: 12pt;
+                color: black;
+                background-color: white;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+            
+            .back-to-top {
+                display: none !important;
+            }
+            
+            .section {
+                page-break-inside: avoid;
+                background-color: white;
+                box-shadow: none;
+                border: 1px solid #eee;
+            }
+            
+            .code-block {
+                background-color: #f8f8f8;
+                color: black;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+            
+            a {
+                text-decoration: none;
+                color: black;
+            }
+            
+            #conclusion {
+                background-color: #f8f8f8;
+                box-shadow: none;
+                border: 1px solid #ddd;
+                border-left: 5px solid #3498db;
+            }
+            
+            img.screenshot {
+                max-width: 80%;
+                height: auto;
+            }
+        }
+        
+        ol li {
+            counter-increment: item;
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 8px;
+        }
+        
+        ol li:before {
+            content: counter(item);
+            color: white;
+            font-weight: bold;
+            background-color: #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            text-align: center;
+            line-height: 20px;
+            position: absolute;
+            left: 0;
+            font-size: 12px;
+        }
         li {
             margin-bottom: 5px;
         }
@@ -875,14 +952,18 @@
             </li>
         </ul>
 
-        <div id="conclusion" class="conclusion">
-            <h3>Conclusion</h3>
-            <p>L'application RappeldesFactures répond efficacement au besoin de rappel et de gestion des factures avec une interface intuitive et des fonctionnalités bien pensées. Malgré les défis techniques posés par les restrictions des systèmes Android récents, l'application a su s'adapter grâce à une approche pragmatique et innovante, notamment avec le système de double vérification pour les notifications.</p>
+        <div id="conclusion" class="conclusion" style="background: linear-gradient(to right, #f0f7fb, #ffffff); padding: 30px; border-radius: 10px; border-left: 6px solid #3498db; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-top: 40px; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: 0; right: 0; width: 150px; height: 150px; background: radial-gradient(circle at top right, rgba(52, 152, 219, 0.1), transparent 70%); z-index: 1;"></div>
             
-            <p>Les choix techniques ont privilégié la fiabilité et la compatibilité avec diverses versions d'Android, tout en assurant une expérience utilisateur fluide. La solution mise en place pour les notifications à 17:45 illustre particulièrement bien cette adaptation aux contraintes du système.</p>
+            <h3 style="color: #2c3e50; font-size: 1.6em; border-bottom: 2px dotted #3498db; display: inline-block; padding-bottom: 8px; margin-top: 0; position: relative; z-index: 2;">Conclusion</h3>
             
-            <p>Les pistes d'amélioration identifiées ouvrent la voie à de nombreuses évolutions futures qui pourraient transformer cette application de simple rappel en un véritable outil de gestion financière personnelle. L'architecture actuelle, bien que basée sur des technologies éprouvées, offre une base solide pour ces futures innovations.</p>
+            <p style="margin-top: 20px; line-height: 1.7; position: relative; z-index: 2;">L'application <strong>RappeldesFactures</strong> répond efficacement au besoin de rappel et de gestion des factures avec une interface intuitive et des fonctionnalités bien pensées. Malgré les défis techniques posés par les restrictions des systèmes Android récents, l'application a su s'adapter grâce à une approche pragmatique et innovante, notamment avec le système de <span style="color: #3498db;">double vérification pour les notifications</span>.</p>
+            
+            <p style="line-height: 1.7; position: relative; z-index: 2;">Les choix technologiques, bien que classiques, offrent une grande stabilité et compatibilité avec toutes les versions récentes d'Android. La priorité donnée à l'expérience utilisateur a permis de développer une solution qui répond parfaitement aux besoins des utilisateurs tout en respectant les contraintes techniques des appareils mobiles.</p>
+            
+            <p style="line-height: 1.7; position: relative; z-index: 2;">L'application est fin prête à être utilisée par le grand public et offre de nombreuses possibilités d'évolution pour enrichir encore davantage l'expérience utilisateur et les fonctionnalités offertes.</p>
         </div>
+
     </div>
 
     <div class="no-print" style="margin-top: 30px; text-align: center; color: #777;">
